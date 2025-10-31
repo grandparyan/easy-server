@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>按键式 FastAPI 计算器</title>
+    <title>按鍵式 FastAPI 計算器</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .calculator { background-color: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); width: 300px; }
@@ -22,7 +22,7 @@
 </head>
 <body>
     <div class="calculator">
-        <h2 style="text-align: center; color: #333; margin-top: 0;">计算器</h2>
+        <h2 style="text-align: center; color: #333; margin-top: 0;">計算器</h2>
         
         <div id="display" class="display">{{ expression if expression else "0" }}</div>
 
@@ -70,25 +70,25 @@
         const hiddenExpression = document.getElementById('hiddenExpression');
         const calcForm = document.getElementById('calcForm');
 
-        // 初始化显示值
+        // 初始化顯示值
         let currentExpression = display.textContent.trim() === '0' || display.textContent.includes('=') 
                                 ? '' 
                                 : display.textContent.trim();
         display.textContent = currentExpression || '0';
 
-        // 绑定到数字和操作符按钮
+        // 綁定到數字和操作符按鈕
         function appendToDisplay(value) {
-            // 如果上次计算有结果或错误，且用户输入数字，则清空重新开始
+            // 如果上次計算有結果或錯誤，且用戶輸入數字，則清空重新開始
             if (display.textContent.includes('=')) {
                 currentExpression = '';
             }
             
-            // 简单逻辑防止连续输入操作符
+            // 簡單邏輯防止連續輸入操作符
             const lastChar = currentExpression.slice(-1);
             const isOperator = (char) => ['+', '-', '*', '/'].includes(char);
             
             if (isOperator(lastChar) && isOperator(value)) {
-                // 如果连续输入操作符，则替换最后一个操作符
+                // 如果連續輸入操作符，則替換最後一個操作符
                 currentExpression = currentExpression.slice(0, -1) + value;
             } else {
                 currentExpression += value;
@@ -97,33 +97,33 @@
             display.textContent = currentExpression || '0';
         }
 
-        // 绑定到 C (清除) 按钮
+        // 綁定到 C (清除) 按鈕
         function clearDisplay() {
             currentExpression = '';
             display.textContent = '0';
-            // 清除上次的显示结果（如果用户之前有计算过）
+            // 清除上次的顯示結果（如果用戶之前有計算過）
             const resultBox = document.querySelector('.result-box');
             if (resultBox) {
                 resultBox.remove();
             }
         }
 
-        // 绑定到 = (计算) 按钮
+        // 綁定到 = (計算) 按鈕
         function calculateResult() {
-            // 1. 将当前的表达式赋值给隐藏的表单字段
+            // 1. 將目前的運算式賦值给隱藏的表單欄位
             hiddenExpression.value = currentExpression;
             
-            // 2. 提交表单给 FastAPI 的 POST 路由
+            // 2. 提交表單給 FastAPI 的 POST 路由
             calcForm.submit();
         }
         
-        // 当页面加载时，如果 FastAPI 传回了结果，更新显示屏
+        // 當頁面載入時，如果 FastAPI 傳回了結果，更新顯示屏
         window.onload = function() {
             const resultBox = document.querySelector('.result-box');
             if (resultBox) {
-                // 如果有结果或错误，更新显示屏为完整的表达式
-                // 确保下次点击按钮时会清空
-                display.textContent = '结果已显示'; 
+                // 如果有結果或錯誤，更新顯示屏為完整的運算式
+                // 確保下次點擊按鈕時會清空
+                display.textContent = '結果已顯示'; 
             }
         }
     </script>
