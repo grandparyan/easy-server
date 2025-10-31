@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI 计算器</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .calculator { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 350px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="number"], select, button { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        select { background-color: #f9f9f9; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
+        button:hover { background-color: #0056b3; }
+        .result, .error { margin-top: 20px; padding: 15px; border-radius: 4px; font-size: 1.1em; text-align: center; }
+        .result { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>🚀 FastAPI 网页计算器</h2>
+        
+        <form method="POST" action="/">
+            
+            <label for="num1">第一个数字:</label>
+            <input type="number" step="any" name="num1" required value="{{ num1_val if num1_val is not none else '' }}">
+
+            <label for="operation">运算:</label>
+            <select name="operation" required>
+                <option value="add" {% if op_val == 'add' %}selected{% endif %}>加 (+)</option>
+                <option value="subtract" {% if op_val == 'subtract' %}selected{% endif %}>减 (-)</option>
+                <option value="multiply" {% if op_val == 'multiply' %}selected{% endif %}>乘 (*)</option>
+                <option value="divide" {% if op_val == 'divide' %}selected{% endif %}>除 (/)</option>
+            </select>
+
+            <label for="num2">第二个数字:</label>
+            <input type="number" step="any" name="num2" required value="{{ num2_val if num2_val is not none else '' }}">
+
+            <button type="submit">计算结果</button>
+        </form>
+
+        {% if result %}
+            <div class="result">
+                {{ result }}
+            </div>
+        {% elif error %}
+            <div class="error">
+                <strong>计算失败：</strong> {{ error }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
