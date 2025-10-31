@@ -1,15 +1,14 @@
-# main.py
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-# 引入 eval 函数，但要小心使用，这里我们通过 ast 模块来做一定程度的安全限制
+# 引入 eval 函數，但要小心使用，這裡我們透過 ast 模組來做一定程度的安全限制
 import ast
 import operator
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# 定义允许的运算操作符及其对应的函数
+# 定義允許的運算操作符及其對應的函數
 _OPERATORS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -19,34 +18,34 @@ _OPERATORS = {
 
 def evaluate_expression(node):
     """
-    安全地评估表达式。
-    它只允许数字、加减乘除运算，禁止其他Python代码执行。
+    安全地評估運算式。
+    它只允許數字、加減乘除運算，禁止其他Python程式碼執行。
     """
     if isinstance(node, ast.Num):  # <number>
         return node.n
     elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
-        # 递归调用来计算左侧和右侧的值
+        # 遞迴呼叫來計算左側和右側的值
         left = evaluate_expression(node.left)
         right = evaluate_expression(node.right)
         
-        # 查找操作符对应的函数
+        # 查找操作符對應的函數
         op_func = _OPERATORS.get(type(node.op))
         if op_func is None:
-            raise TypeError(f"不支持的操作符: {type(node.op).__name__}")
+            raise TypeError(f"不支援的操作符: {type(node.op).__name__}")
             
-        # 执行运算
+        # 執行運算
         if type(node.op) is ast.Div and right == 0:
-             raise ZeroDivisionError("除数不能为零")
+             raise ZeroDivisionError("除數不能為零")
              
         return op_func(left, right)
     elif isinstance(node, ast.Expression):
         return evaluate_expression(node.body)
     else:
-        raise TypeError(f"表达式中发现不支持的结构: {type(node).__name__}")
+        raise TypeError(f"運算式中發現不支援的結構: {type(node).__name__}")
 
 
 # ----------------------------------------------------
-# 1. GET 路由：显示计算器首页
+# 1. GET 路由：顯示計算器首頁
 # ----------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 async def get_calculator(request: Request):
@@ -56,11 +55,11 @@ async def get_calculator(request: Request):
     )
 
 # ----------------------------------------------------
-# 2. POST 路由：处理计算请求 (接收表达式字符串)
+# 2. POST 路由：處理計算請求 (接收運算式字串)
 # ----------------------------------------------------
-# main.py 中 @app.post("/") 路由的 try...except 块
-# main.py (确保缩进和层级是正确的)
-# main.py (部分代码)
+# main.py 中 @app.post("/") 路由的 try...except 區塊
+# main.py (確保縮排和層級是正確的)
+# main.py (部分程式碼)
 @app.post("/", response_class=HTMLResponse)
 async def calculate_keypad(
     request: Request, 
@@ -72,22 +71,22 @@ async def calculate_keypad(
     safe_expression = expression.replace(' ', '')
     
     if not safe_expression:
-        return templates.TemplateResponse("index.html", {"request": request, "expression": "", "result": None, "error": "请输入表达式"})
+        return templates.TemplateResponse("index.html", {"request": request, "expression": "", "result": None, "error": "請輸入運算式"})
 
     try:
-        # 你可以暂时用简单的 eval() 来替换这里的 ast.parse 和 evaluate_expression，直到它不报错为止
+        # 你可以暫時用簡單的 eval() 來替換這裡的 ast.parse 和 evaluate_expression，直到它不報錯為止
         calculated_result = eval(safe_expression)
         result = f"{calculated_result:.4f}".rstrip('0').rstrip('.')
 
     except ZeroDivisionError:
-        error_message = "错误：除数不能为零！"
+        error_message = "錯誤：除數不能為零！"
     except Exception as e:
-        # 你的错误很可能是在这个 except 块之后，
-        # 比如你在文件末尾留下了额外的缩进或者不完整的代码。
+        # 你的錯誤很可能是在這個 except 區塊之後，
+        # 比如你在檔案末尾留下了額外的縮排或者不完整的程式碼。
         print(f"DEBUG ERROR: {type(e).__name__}: {e}")
-        error_message = "表达式格式不正确，请检查！(调试中)"
+        error_message = "運算式格式不正確，請檢查！(偵錯中)"
         
-    # 确保返回语句位于函数的最外层缩进
+    # 確保返回語句位於函數的最外層縮排
     return templates.TemplateResponse(
         "index.html", 
         {
@@ -97,7 +96,7 @@ async def calculate_keypad(
             "error": error_message
         }
     )
-    # ⚠️ 确保第 86 行（或附近）没有多余的代码或不正确的缩进！
-# 运行说明：
-# 在命令行中运行：py -m uvicorn main:app --reload
-# 浏览器访问：http://127.0.0.1:8000/
+    # ⚠️ 確保第 86 行（或附近）沒有多餘的程式碼或不正確的縮排！
+# 執行說明：
+# 在命令列中執行：py -m uvicorn main:app --reload
+# 瀏覽器造訪：http://127.0.0.1:8000/
