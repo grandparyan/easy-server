@@ -59,10 +59,10 @@ async def get_calculator(request: Request):
 # 2. POST 路由：处理计算请求 (接收表达式字符串)
 # ----------------------------------------------------
 # main.py 中 @app.post("/") 路由的 try...except 块
+# main.py (确保缩进和层级是正确的)
 @app.post("/", response_class=HTMLResponse)
 async def calculate_keypad(
-    request: Request, 
-    expression: str = Form(...) 
+# ... (函数参数)
 ):
     result = None
     error_message = None
@@ -70,33 +70,16 @@ async def calculate_keypad(
     # 清除表达式中的空格
     safe_expression = expression.replace(' ', '')
     
-    if not safe_expression:
-        # ... (保持原样)
-
-    try:
-        # ⚠️ 临时使用 eval() 进行调试。
-        # 目标是验证前端传递的字符串是否能被 Python 成功计算。
-        calculated_result = eval(safe_expression) 
-        
-        result = f"{calculated_result:.4f}".rstrip('0').rstrip('.')
-
-    except ZeroDivisionError:
-        error_message = "错误：除数不能为零！"
-    except Exception as e:
-        # 打印出具体的错误信息到终端，方便我们看到是哪个异常！
-        print(f"DEBUG ERROR: {type(e).__name__}: {e}")
-        error_message = "表达式格式不正确，请检查！(调试中)"
-
-    # ... (保持原样，最后返回 templates.TemplateResponse)
-    return templates.TemplateResponse(
-        "index.html", 
-        {
-            "request": request, 
-            "expression": expression,
-            "result": result,
-            "error": error_message
-        }
-    )
+    if not safe_expression: # <-- 第 73 行
+        return templates.TemplateResponse("index.html", {"request": request, "expression": "", "result": None, "error": "请输入表达式"})
+    
+    # 注意：这里有一个空行是 OK 的，但 'try' 必须与 'if' 位于同一缩进层级
+    try: # <-- 第 76 行 (或附近)
+        # 确保 try: 下面的所有代码都缩进了一个层级
+        tree = ast.parse(safe_expression, mode='eval') 
+        # ...
+    
+    # ... (其他 except 块也要确保缩进正确)
 
 # 运行说明：
 # 在命令行中运行：py -m uvicorn main:app --reload
