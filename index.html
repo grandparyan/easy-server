@@ -3,53 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI 计算器</title>
+    <title>按键式 FastAPI 计算器</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .calculator { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 350px; }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input[type="number"], select, button { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        select { background-color: #f9f9f9; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
-        button:hover { background-color: #0056b3; }
-        .result, .error { margin-top: 20px; padding: 15px; border-radius: 4px; font-size: 1.1em; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .calculator { background-color: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); width: 300px; }
+        .display { background-color: #222; color: #0f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: right; font-size: 2em; overflow-x: auto; white-space: nowrap; font-family: 'Courier New', monospace; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .btn { padding: 15px; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; transition: background-color 0.1s; }
+        .btn.number { background-color: #e0e0e0; color: #333; }
+        .btn.operator { background-color: #ff9500; color: white; }
+        .btn.clear { background-color: #d33; color: white; grid-column: span 2; }
+        .btn.equal { background-color: #1a73e8; color: white; }
+        .btn:active { opacity: 0.8; }
+        .result-box { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; text-align: center; }
         .result { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
         .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h2>🚀 FastAPI 网页计算器</h2>
+        <h2 style="text-align: center; color: #333; margin-top: 0;">计算器</h2>
         
-        <form method="POST" action="/">
-            
-            <label for="num1">第一个数字:</label>
-            <input type="number" step="any" name="num1" required value="{{ num1_val if num1_val is not none else '' }}">
+        <div id="display" class="display">{{ expression if expression else "0" }}</div>
 
-            <label for="operation">运算:</label>
-            <select name="operation" required>
-                <option value="add" {% if op_val == 'add' %}selected{% endif %}>加 (+)</option>
-                <option value="subtract" {% if op_val == 'subtract' %}selected{% endif %}>减 (-)</option>
-                <option value="multiply" {% if op_val == 'multiply' %}selected{% endif %}>乘 (*)</option>
-                <option value="divide" {% if op_val == 'divide' %}selected{% endif %}>除 (/)</option>
-            </select>
-
-            <label for="num2">第二个数字:</label>
-            <input type="number" step="any" name="num2" required value="{{ num2_val if num2_val is not none else '' }}">
-
-            <button type="submit">计算结果</button>
+        <form method="POST" action="/" id="calcForm">
+            <input type="hidden" name="expression" id="hiddenExpression" value="">
         </form>
 
+        <div class="buttons">
+            <button class="btn clear" onclick="clearDisplay()">C</button>
+            <button class="btn number" onclick="appendToDisplay('.')">.</button>
+            <button class="btn operator" onclick="appendToDisplay('/')">/</button>
+
+            <button class="btn number" onclick="appendToDisplay('7')">7</button>
+            <button class="btn number" onclick="appendToDisplay('8')">8</button>
+            <button class="btn number" onclick="appendToDisplay('9')">9</button>
+            <button class="btn operator" onclick="appendToDisplay('*')">*</button>
+
+            <button class="btn number" onclick="appendToDisplay('4')">4</button>
+            <button class="btn number" onclick="appendToDisplay('5')">5</button>
+            <button class="btn number" onclick="appendToDisplay('6')">6</button>
+            <button class="btn operator" onclick="appendToDisplay('-')">-</button>
+
+            <button class="btn number" onclick="appendToDisplay('1')">1</button>
+            <button class="btn number" onclick="appendToDisplay('2')">2</button>
+            <button class="btn number" onclick="appendToDisplay('3')">3</button>
+            <button class="btn operator" onclick="appendToDisplay('+')">+</button>
+            
+            <button class="btn number" onclick="appendToDisplay('0')">0</button>
+            <button class="btn equal" onclick="calculateResult()">=</button>
+        </div>
+
         {% if result %}
-            <div class="result">
-                {{ result }}
+            <div class="result result-box">
+                {{ expression }} = <strong>{{ result }}</strong>
             </div>
         {% elif error %}
-            <div class="error">
-                <strong>计算失败：</strong> {{ error }}
+            <div class="error result-box">
+                {{ error }}
             </div>
         {% endif %}
     </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const hiddenExpression = document.getElementById('hiddenExpression');
+        const calcForm = document.getElementById('calcForm');
+
+        // 初始化显示值
+        let currentExpression = display.textContent.trim() === '0' || display.textContent.includes('=') 
+                                ? '' 
+                                : display.textContent.trim();
+        display.textContent = currentExpression || '0';
+
+        // 绑定到数字和操作符按钮
+        function appendToDisplay(value) {
+            // 如果上次计算有结果或错误，且用户输入数字，则清空重新开始
+            if (display.textContent.includes('=')) {
+                currentExpression = '';
+            }
+            
+            // 简单逻辑防止连续输入操作符
+            const lastChar = currentExpression.slice(-1);
+            const isOperator = (char) => ['+', '-', '*', '/'].includes(char);
+            
+            if (isOperator(lastChar) && isOperator(value)) {
+                // 如果连续输入操作符，则替换最后一个操作符
+                currentExpression = currentExpression.slice(0, -1) + value;
+            } else {
+                currentExpression += value;
+            }
+            
+            display.textContent = currentExpression || '0';
+        }
+
+        // 绑定到 C (清除) 按钮
+        function clearDisplay() {
+            currentExpression = '';
+            display.textContent = '0';
+            // 清除上次的显示结果（如果用户之前有计算过）
+            const resultBox = document.querySelector('.result-box');
+            if (resultBox) {
+                resultBox.remove();
+            }
+        }
+
+        // 绑定到 = (计算) 按钮
+        function calculateResult() {
+            // 1. 将当前的表达式赋值给隐藏的表单字段
+            hiddenExpression.value = currentExpression;
+            
+            // 2. 提交表单给 FastAPI 的 POST 路由
+            calcForm.submit();
+        }
+        
+        // 当页面加载时，如果 FastAPI 传回了结果，更新显示屏
+        window.onload = function() {
+            const resultBox = document.querySelector('.result-box');
+            if (resultBox) {
+                // 如果有结果或错误，更新显示屏为完整的表达式
+                // 确保下次点击按钮时会清空
+                display.textContent = '结果已显示'; 
+            }
+        }
+    </script>
 </body>
 </html>
