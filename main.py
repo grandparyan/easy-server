@@ -58,10 +58,10 @@ async def get_calculator(request: Request):
 # ----------------------------------------------------
 # 2. POST 路由：处理计算请求 (接收表达式字符串)
 # ----------------------------------------------------
+# main.py 中 @app.post("/") 路由的 try...except 块
 @app.post("/", response_class=HTMLResponse)
 async def calculate_keypad(
     request: Request, 
-    # 从 HTML 表单中接收一个名为 'expression' 的字符串
     expression: str = Form(...) 
 ):
     result = None
@@ -71,27 +71,23 @@ async def calculate_keypad(
     safe_expression = expression.replace(' ', '')
     
     if not safe_expression:
-        return templates.TemplateResponse("index.html", {"request": request, "expression": "", "result": None, "error": "请输入表达式"})
+        # ... (保持原样)
 
     try:
-        # 使用 ast.parse 将表达式字符串解析为抽象语法树 (AST)
-        tree = ast.parse(safe_expression, mode='eval')
+        # ⚠️ 临时使用 eval() 进行调试。
+        # 目标是验证前端传递的字符串是否能被 Python 成功计算。
+        calculated_result = eval(safe_expression) 
         
-        # 通过我们自定义的安全函数计算结果
-        calculated_result = evaluate_expression(tree)
-        
-        # 格式化结果
         result = f"{calculated_result:.4f}".rstrip('0').rstrip('.')
 
     except ZeroDivisionError:
         error_message = "错误：除数不能为零！"
-    except TypeError as e:
-        error_message = f"表达式错误：{e}"
-    except Exception:
-        # 捕获其他解析错误，如操作符不规范等
-        error_message = "表达式格式不正确，请检查！"
+    except Exception as e:
+        # 打印出具体的错误信息到终端，方便我们看到是哪个异常！
+        print(f"DEBUG ERROR: {type(e).__name__}: {e}")
+        error_message = "表达式格式不正确，请检查！(调试中)"
 
-    # 重新渲染 index.html，并将原始表达式和结果/错误信息传回
+    # ... (保持原样，最后返回 templates.TemplateResponse)
     return templates.TemplateResponse(
         "index.html", 
         {
